@@ -10,7 +10,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
 
 ## Tasks
 
-- [ ] 1. Escribir tests de RF-1 y RF-2 (en rojo)
+- [x] 1. Escribir tests de RF-1 y RF-2 (en rojo)
   - Crear `tests/habilitados.test.js` con supertest sobre `app.js` (mismo patrón que `tests/cursos.test.js`).
   - Escribir los siguientes tests, cada uno etiquetado con `// Requisito: RF-x.y` en un comentario sobre el test:
     - `rf1.1`: `POST /habilitados` con `{"aprobados": ["1INF25","1INF27","1INF49"]}` → 200, exactamente 27 cursos, incluye "1INF29", "1INF30", "1INF31", "1INF32" (RF-1.1).
@@ -25,7 +25,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** ninguna.
   - **Commit:** `test: tests de RF-1 y RF-2 en rojo (endpoint inexistente)`
 
-- [ ] 2. Escribir tests de RS-1, RS-2 y RS-3 (en rojo sobre implementación ingenua)
+- [x] 2. Escribir tests de RS-1, RS-2 y RS-3 (en rojo sobre implementación ingenua)
   - Añadir a `tests/habilitados.test.js`, cada uno etiquetado con `// Requisito: RS-x.y`:
     - `rs1.1`: body > 2 KB (p. ej. 300 códigos válidos, ~2.7 KB) → 413 con body exactamente `{"error": "solicitud demasiado grande"}` (RS-1.1).
     - `rs1.2`: array con 88 elementos → 413; y array con 88 duplicados del mismo código (p. ej. 88× "1INF25") → 413 (valida conteo pre-deduplicación, P-D1) (RS-1.2).
@@ -42,7 +42,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** 1 (mismo archivo, los tests RF ya escritos).
   - **Commit:** `test: tests de RS-1/RS-2/RS-3 en rojo sobre implementación ingenua`
 
-- [ ] 3. Implementación ingenua SIN defensas (solo RF)
+- [x] 3. Implementación ingenua SIN defensas (solo RF)
   - Crear `src/routes/habilitados.js`: router Express con `POST /` que llama al servicio y responde `res.json(cursos)`; sin validación de tipo, sin patrón, sin límites, sin middleware extendido.
   - Crear `src/services/habilitados.js`: `calcular(aprobados)` con `new Set(aprobados)`, `repositorio.listar()`, filtro `!set.has(curso.id) && curso.prerequisites.every(r => set.has(r))`, y `_.sortBy(habilitados, 'id')` (lodash ya disponible; P-D5).
   - Montar en `src/app.js`: `app.use('/habilitados', require('./routes/habilitados'));` — por ahora SIN `express.json` con límite.
@@ -53,12 +53,12 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** 1, 2.
   - **Commit:** `feat: implementación ingenua de POST /habilitados (solo cálculo, sin defensas)`
 
-- [ ] 4. Checkpoint - Confirmar estado TDD
+- [x] 4. Checkpoint - Confirmar estado TDD
   - Verificar: tests RF en verde, tests RS en rojo, tests de regresión en verde.
   - Confirmar que el usuario anotó el link del run en rojo en `TRAZABILIDAD.md`.
   - Asegurar que todos los tests pasan, hacer preguntas al usuario si surgen.
 
-- [ ] 5. Tests de propiedad PBT (fast-check)
+- [x] 5. Tests de propiedad PBT (fast-check)
   - Ejecutar `npm install --save-dev fast-check` y verificar `npm audit --audit-level=high` sin vulnerabilidades alta/crítica (gate SCA).
   - Crear `tests/habilitadosProp.test.js` con fast-check, cada test etiquetado `// Feature: habilitados, Propiedad N: <título>`, mínimo 100 iteraciones (Propiedad 1 con `numRuns: 200`):
     - **Propiedad 1 — Bicondicional de habilitación** (`numRuns: 200`): generar subconjunto aleatorio de ids de la malla con `fc.shuffledSubarray`; llamar al servicio; verificar inclusión (todo retornado cumple la condición) y completitud (todo curso que cumple la condición está retornado). **Valida: RF-2.1, RF-2.2, RF-2.3, RF-2.4.**
@@ -73,7 +73,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** 3.
   - **Commit:** `test: propiedades PBT fast-check (Propiedades 1-5) + test de integridad de datos`
 
-- [ ] 6. Implementar validación de entrada (src/util/validacion.js)
+- [x] 6. Implementar validación de entrada (src/util/validacion.js)
   - Crear `src/util/validacion.js` con `validarAprobados(body)` según el diseño:
     - `const PATRON_CODIGO = /^(?:[0-9][A-Z]{3}[0-9]{2}|[A-Z]{3}[0-9]{3})$/;` y `const MAX_APROBADOS = 87;`
     - `aprobados = body?.aprobados` (evita TypeError con `req.body` undefined).
@@ -88,7 +88,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** 3, 5.
   - **Commit:** `feat: validación estricta de aprobados (tipo, patrón, límite 87)`
 
-- [ ] 7. Implementar límite de body y middleware extendido
+- [x] 7. Implementar límite de body y middleware extendido
   - En `src/app.js`, montar `express.json({ limit: '2kb' })` SOLO para `/habilitados`, antes de la ruta (primera barrera de DoS, P-D4):
     `app.use('/habilitados', express.json({ limit: '2kb' }), require('./routes/habilitados'));`
     (el `express.json()` global sin límite sigue para el resto).
@@ -101,7 +101,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** 6.
   - **Commit:** `feat: límite 2kb en /habilitados y middleware de errores extendido (413/400/500)`
 
-- [ ] 8. Ajustar servicio si falta sortBy (si T3 ya lo incluyó, solo verificar)
+- [x] 8. Ajustar servicio si falta sortBy
   - Verificar `src/services/habilitados.js`: respuesta ordenada por `id` ascendente (`_.sortBy(habilitados, 'id')`, P-D5) y deduplicación vía `Set`.
   - Si la tarea 3 ya incluyó el servicio completo, esta tarea se reduce a una verificación con un test de orden (`ids` estrictamente crecientes).
   - _Requisitos: RF-1.1, RF-2.1 (orden determinista de la respuesta)_
@@ -109,7 +109,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** 3.
   - **Commit:** `test: verificar orden id ascendente en la respuesta` (solo si se añade test)
 
-- [ ] 9. Checkpoint - Verificación local completa
+- [x] 9. Checkpoint - Verificación local completa
   - Ejecutar `npx jest --coverage --coverageThreshold='{"global":{"lines":80}}'`.
   - Si coverage < 80 %, añadir tests para las líneas no cubiertas de `src/**/*.js` (p. ej. ramas de `validacion.js` o `errors.js`).
   - Verificar `npm audit --audit-level=high` en verde.
@@ -118,7 +118,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Completada cuando:** `npx jest --coverage` verde localmente con >= 80 % líneas sobre `src/**/*.js`.
   - **Dependencias:** 7, 8.
 
-- [ ] 10. Commit de corrección y push (EVIDENCIA DE CORRECCIÓN)
+- [x] 10. Commit de corrección y push (EVIDENCIA DE CORRECCIÓN)
   - Commit de todos los cambios de las tareas 6-9 (si no se hizo commit intermedio) y push.
   - El usuario anota el link del run en verde en `TRAZABILIDAD.md` (EVIDENCIA DE CORRECCIÓN).
   - _Requisitos: RS-1, RS-2, RS-3, RQ-1 (run en verde)_
@@ -126,7 +126,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** 9.
   - **Commit:** `fix: validación y límites para RS-1/RS-2/RS-3 + cobertura 80`
 
-- [ ] 11. Actualizar CI con gates de seguridad (fase 5)
+- [x] 11. Actualizar CI con gates de seguridad (fase 5)
   - Actualizar `.github/workflows/ci.yml` según el diseño:
     - `permissions: contents: read` a nivel de workflow.
     - Job `gitleaks` (primer job): `actions/checkout@v4` con `fetch-depth: 0` + `gitleaks/gitleaks-action@v2`.
@@ -139,7 +139,7 @@ Implementación del endpoint `POST /habilitados` siguiendo un ciclo TDD con evid
   - **Dependencias:** 10.
   - **Commit:** `ci: gates de gitleaks, npm audit, cobertura 80 y CodeQL security-extended`
 
-- [ ] 12. Completar TRAZABILIDAD.md (fase 6)
+- [x] 12. Completar TRAZABILIDAD.md (fase 6)
   - Reemplazar cada `TODO(link run)` de la tabla de evidencias con los links reales que el usuario anotó (run en rojo de la tarea 3, run en verde de la tarea 10, run de CI de la tarea 11).
   - Completar la sección "Diagnóstico de runs en rojo": para el run en rojo, causa exacta por requisito (RS-1: sin `express.json` con límite ni guarda de 87; RS-2: sin patrón ni middleware extendido; RS-3: sin `Array.isArray`).
   - Mantener la sección "Cambios que hice a la propuesta de Kiro" con los 2 cambios ya documentados (64 KB→2 KB, 100 ms→300 ms); añadir cualquier cambio nuevo si surge.
