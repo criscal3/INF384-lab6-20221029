@@ -11,6 +11,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', cursos: repositorio.listar().length });
 });
 
-// Aquí se montará el router de cursos: app.use('/cursos', require('./routes/cursos'));
+app.use('/cursos', require('./routes/cursos'));
+
+// Generic error-handling middleware — must be registered after all routes
+app.use(require('./middleware/errors'));
 
 module.exports = app;
